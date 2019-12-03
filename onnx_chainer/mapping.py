@@ -149,23 +149,23 @@ converters = _get_converters()
 
 _supported_function_set = {
     # Math
-    'sign',
+    (F, 'sign'),
 
     # RNN
-    'n_step_gru',
+    (F.rnn.n_step_gru, 'n_step_gru'),
 }
 
 
 @contextmanager
 def patch_functions():
     org_funcs = {}
-    for name in _supported_function_set:
+    for mod, name in _supported_function_set:
         org_func = getattr(F, name)
         org_funcs[name] = org_func
-        setattr(F, name, fake_as_funcnode(
+        setattr(mod, name, fake_as_funcnode(
             org_func, name, experimental_warning=False))
     try:
         yield
     finally:
-        for name in _supported_function_set:
-            setattr(F, name, org_funcs[name])
+        for mod, name in _supported_function_set:
+            setattr(mod, name, org_funcs[name])
